@@ -80,7 +80,9 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Cons(h, t) => Cons(h, init(t))
   }
 
-  def length[A](l: List[A]): Int = ???
+  def length[A](l: List[A]): Int = {
+    foldRight(l, 0)((x, y) => 1 + y)
+  }
 
   def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = ???
 
