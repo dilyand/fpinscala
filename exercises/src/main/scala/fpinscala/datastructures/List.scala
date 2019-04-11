@@ -84,7 +84,22 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldRight(l, 0)((x, y) => 1 + y)
   }
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = ???
+  @annotation.tailrec
+  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B =
+    l match {
+      case Nil => z
+      case Cons(h, t) => foldLeft(t, f(z, h))(f)
+    }
+
+  def sum3(ns: List[Int]): Int =
+    foldLeft(ns, 0)(_ + _)
+
+  def product3(ns: List[Double]): Double =
+    foldLeft(ns, 1)(_ * _)
+
+  def length3[A](l: List[A]): Int =
+    foldLeft(l, 0)((y, x) => 1 + y)
+
 
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 }
