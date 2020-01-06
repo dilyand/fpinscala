@@ -62,6 +62,7 @@ object List { // `List` companion object. Contains functions for creating and wo
       case Cons(_, t) => Cons(h, t)
     }
 
+  @scala.annotation.tailrec
   def drop[A](l: List[A], n: Int): List[A] =
     if (n <= 0) l
     else l match {
@@ -69,6 +70,7 @@ object List { // `List` companion object. Contains functions for creating and wo
       case Cons(_, t) => drop(t, n - 1)
     }
 
+  @scala.annotation.tailrec
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
     case Cons(h, t) if f(h) => dropWhile(t, f)
     case _ => l
@@ -95,11 +97,31 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldLeft(ns, 0)(_ + _)
 
   def product3(ns: List[Double]): Double =
-    foldLeft(ns, 1)(_ * _)
+    foldLeft(ns, 1.0)(_ * _)
 
   def length3[A](l: List[A]): Int =
     foldLeft(l, 0)((y, x) => 1 + y)
 
+  def reverse[A](l: List[A]): List[A] =
+    foldLeft(l, List[A]())((b, a) => Cons(a, b))
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = ???
+  def append2[A](l1: List[A], l2: List[A]): List[A] =
+    foldRight(l1, l2)(Cons(_, _))
+
+  def add1(l: List[Int]): List[Int] = l match {
+    case Nil => Nil
+    case Cons(h, t) => Cons(h + 1, add1(t))
+  }
+
+  def doubleToString(l: List[Double]): List[String] =
+    foldRight(l, Nil: List[String])((h, t) => Cons(h.toString, t))
+
+  def map[A, B](l: List[A])(f: A => B): List[B] =
+    foldRight(l, Nil: List[B])((h, t) => Cons(f(h), t))
+
+  def filter[A](as: List[A])(f: A => Boolean): List[A] =
+    foldRight(as, Nil: List[A])((h, t) => f(h) match {
+      case true => Cons(h, t)
+      case false => t
+    })
 }
