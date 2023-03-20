@@ -43,6 +43,9 @@ object List { // `List` companion object. Contains functions for creating and wo
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
 
+  def foldLeftViaFoldRight[A, B](l: List[A], z: B)(f: (B, A) => B): B =
+    foldRight(l, z)((a, b) => f(b, a))
+
   def sum2(ns: List[Int]) =
     foldRight(ns, 0)((x,y) => x + y)
 
@@ -93,6 +96,10 @@ object List { // `List` companion object. Contains functions for creating and wo
       case Cons(h, t) => foldLeft(t, f(z, h))(f)
     }
 
+  @annotation.tailrec
+  def foldRightViaFoldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(as, z)((b, a) => f(a, b))
+
   def sum3(ns: List[Int]): Int =
     foldLeft(ns, 0)(_ + _)
 
@@ -108,6 +115,12 @@ object List { // `List` companion object. Contains functions for creating and wo
   def append2[A](l1: List[A], l2: List[A]): List[A] =
     foldRight(l1, l2)(Cons(_, _))
 
+  def append3[A](l1: List[A], l2: List[A]): List[A] =
+    foldLeft(reverse(l2), l1)((b, a) => Cons(a, b))
+
+  def flatten[A](ls: List[List[A]]): List[A] =
+    foldLeft(ls, List[A]())((acc, l) => append3(acc, l))
+
   def add1(l: List[Int]): List[Int] = l match {
     case Nil => Nil
     case Cons(h, t) => Cons(h + 1, add1(t))
@@ -116,12 +129,44 @@ object List { // `List` companion object. Contains functions for creating and wo
   def doubleToString(l: List[Double]): List[String] =
     foldRight(l, Nil: List[String])((h, t) => Cons(h.toString, t))
 
+  def doubleToString2(l: List[Double]): List[String] =
+    foldLeft(reverse(l), List[String]())((b, a) => Cons(a.toString, b))
+
   def map[A, B](l: List[A])(f: A => B): List[B] =
     foldRight(l, Nil: List[B])((h, t) => Cons(f(h), t))
+
+  def map2[A, B](l: List[A])(f: A => B): List[B] =
+    foldLeft(reverse(l), List[B]())((b, a) => Cons(f(a), b))
 
   def filter[A](as: List[A])(f: A => Boolean): List[A] =
     foldRight(as, Nil: List[A])((h, t) => f(h) match {
       case true => Cons(h, t)
       case false => t
     })
+
+  def filter2[A](as: List[A])(f: A => Boolean): List[A] =
+    foldLeft(reverse(as), List[A]())((b, a) => f(a) match {
+      case true => Cons(a, b)
+      case false => b
+    })
+
+  def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] =
+    flatten(map2(as)(f))
+
+  def filter3[A](as: List[A])(f: A => Boolean): List[A] =
+    flatMap(as)(a => if (f(a)) List(a) else Nil)
+
+  def addLists(l1: List[Int], l2: List[Int]): List[Int] =
+    (l1, l2) match {
+      case (Nil, _) => l2
+      case (_, Nil) => l1
+      case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, addLists(t1, t2))
+    }
+
+  def zipWith[A](l1: List[A], l2: List[A])(f: (A, A) => A): List[A] =
+    (l1, l2) match {
+      case (Nil, _) => l2
+      case (_, Nil) => l1
+      case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
+    }
 }
