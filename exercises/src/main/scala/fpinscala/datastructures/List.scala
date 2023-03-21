@@ -1,5 +1,9 @@
 package fpinscala.datastructures
 
+import fpinscala.datastructures.List.length
+
+import scala.annotation.tailrec
+
 sealed trait List[+A] // `List` data type, parameterized on a type, `A`
 case object Nil extends List[Nothing] // A `List` data constructor representing the empty list
 /* Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`,
@@ -96,7 +100,6 @@ object List { // `List` companion object. Contains functions for creating and wo
       case Cons(h, t) => foldLeft(t, f(z, h))(f)
     }
 
-  @annotation.tailrec
   def foldRightViaFoldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B =
     foldLeft(as, z)((b, a) => f(a, b))
 
@@ -139,15 +142,17 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldLeft(reverse(l), List[B]())((b, a) => Cons(f(a), b))
 
   def filter[A](as: List[A])(f: A => Boolean): List[A] =
-    foldRight(as, Nil: List[A])((h, t) => f(h) match {
-      case true => Cons(h, t)
-      case false => t
+    foldRight(as, Nil: List[A])((h, t) => if (f(h)) {
+      Cons(h, t)
+    } else {
+      t
     })
 
   def filter2[A](as: List[A])(f: A => Boolean): List[A] =
-    foldLeft(reverse(as), List[A]())((b, a) => f(a) match {
-      case true => Cons(a, b)
-      case false => b
+    foldLeft(reverse(as), List[A]())((b, a) => if (f(a)) {
+      Cons(a, b)
+    } else {
+      b
     })
 
   def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] =
@@ -169,4 +174,25 @@ object List { // `List` companion object. Contains functions for creating and wo
       case (_, Nil) => l1
       case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
     }
+
+  @tailrec
+  def takeWhile[A](l: List[A], f: List[A] => Boolean, acc: List[A] = Nil): List[A] = l match {
+    case Cons(h, t) if f(Cons(h, acc)) => takeWhile(t, f, Cons(h, acc))
+    case _ => reverse(acc)
+  }
+
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    val subLength = length(sub)
+
+    @tailrec
+    def go(sup: List[A], sub: List[A]): Boolean = {
+      val init = takeWhile(sup, length(_) <= subLength)
+      init match {
+        case Nil => false
+        case _ => if (init == sub) true else go(drop(sup, 1), sub)
+      }
+    }
+
+    go(sup, sub)
+  }
 }
