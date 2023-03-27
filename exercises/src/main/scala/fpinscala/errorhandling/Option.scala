@@ -46,9 +46,22 @@ object Option {
     else Some(xs.sum / xs.length)
   def variance(xs: Seq[Double]): Option[Double] = mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
 
-  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = ???
+  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = a.flatMap(av => b.map(bv => f(av, bv)))
 
-  def sequence[A](a: List[Option[A]]): Option[List[A]] = ???
+  def sequenceViaMap2[A](a: List[Option[A]]): Option[List[A]] = a match {
+    case Nil => Some(Nil)
+    case h :: t => h.flatMap(hv => map2(Some(List(hv)), sequence(t))((x: List[A], y: List[A]) => x ++ y))
+  }
 
-  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = ???
+  def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
+    case Nil => Some(Nil)
+    case h :: t => h.flatMap(hv => sequence(t).map(hv :: _))
+  }
+
+  def sequenceViaTraverse[A](a: List[Option[A]]): Option[List[A]] = traverse(a)(identity)
+
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+    case Nil => Some(Nil)
+    case h :: t => f(h).flatMap(hh => traverse(t)(f).map(hh :: _))
+  }
 }
