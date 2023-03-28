@@ -46,7 +46,10 @@ object Option {
     else Some(xs.sum / xs.length)
   def variance(xs: Seq[Double]): Option[Double] = mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
 
-  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = a.flatMap(av => b.map(bv => f(av, bv)))
+  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = for {
+    aa <- a
+    bb <- b
+  } yield f(aa, bb)
 
   def sequenceViaMap2[A](a: List[Option[A]]): Option[List[A]] = a match {
     case Nil => Some(Nil)
