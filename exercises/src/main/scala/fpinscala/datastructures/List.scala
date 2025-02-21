@@ -186,7 +186,7 @@ object List { // `List` companion object. Contains functions for creating and wo
 
     @tailrec
     def go(sup: List[A], sub: List[A]): Boolean = {
-      val init = takeWhile(sup, length(_) <= subLength)
+      val init = takeWhile(sup, length[A](_: List[A]) <= subLength)
       init match {
         case Nil => false
         case _ => if (init == sub) true else go(drop(sup, 1), sub)
