@@ -35,6 +35,12 @@ trait Stream[+A] {
     case _ => empty
   }
 
+  def takeViaUnfold(n: Int): Stream[A] = Stream.unfold((this, n)) {
+    case (Cons(h, t), n) if n > 1 => Some((h(), (t(), n - 1)))
+    case (Cons(h, _), 1) => Some((h(), (empty, 0)))
+    case _ => None
+  }
+
   @annotation.tailrec
   final def drop(n: Int): Stream[A] = this match {
     case Cons(_, t) if n > 0 => t().drop(n - 1)
@@ -56,6 +62,11 @@ trait Stream[+A] {
   // writing your own function signatures.
 
   def map[B](f: A => B): Stream[B] = this.foldRight(empty[B]) { (a, b) => cons(f(a), b) }
+
+  def mapViaUnfold[B](f: A => B): Stream[B] = Stream.unfold(this) {
+    case Cons(h, t) => Some(f(h()), t())
+    case _ => None
+  }
 
   def filter(p: A => Boolean): Stream[A] = this.foldRight(empty[A]) { (a, b) => if (p(a)) cons(a, b) else b }
 
